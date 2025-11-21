@@ -21,6 +21,45 @@ type createProductRequest struct {
 	ProductQty  int    `json:"ProductQty"`
 }
 
+// DeleteProduct godoc
+// @Summary      Delete a product
+// @Description  Deletes a product by ID.
+// @Tags         products
+// @Produce      json
+// @Param        productId  path  string  true  "Product ID (UUID)"
+// @Success      200  {object}  map[string]interface{}
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /api/products/{productId} [delete]
+func DeleteProduct(c *fiber.Ctx) error {
+	productIDParam := strings.TrimSpace(c.Params("productId"))
+	if productIDParam == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "productId is required")
+	}
+
+	productUUID, err := uuid.Parse(productIDParam)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "productId must be a valid UUID")
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection, err := db.ProductsCollection(ctx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
+	}
+
+	res, err := collection.DeleteOne(ctx, bson.M{"ProductID": productUUID})
+	if err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to delete product")
+	}
+
+	return c.JSON(fiber.Map{
+		"deleted_product": res.DeletedCount,
+	})
+}
+
 // ListProducts godoc
 // @Summary      List products
 // @Description  Returns all products.

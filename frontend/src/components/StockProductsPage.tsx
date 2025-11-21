@@ -31,6 +31,8 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
   const [productMessage, setProductMessage] = useState<string | null>(null)
   const [productError, setProductError] = useState<string | null>(null)
   const [submittingProduct, setSubmittingProduct] = useState(false)
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
+  const [confirmProductId, setConfirmProductId] = useState<string | null>(null)
 
   const normalizedStockName = useMemo(
     () => stockName.trim().toLowerCase(),
@@ -151,6 +153,40 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       setProductError(fallback)
     } finally {
       setSubmittingProduct(false)
+    }
+  }
+
+  const handleDeleteProduct = async (productId: string) => {
+    setProductMessage(null)
+    setProductError(null)
+    if (!productId) {
+      setProductError('Missing product id.')
+      return
+    }
+
+    setDeletingProductId(productId)
+    try {
+      const response = await fetch(
+        apiUrl(`/api/products/${encodeURIComponent(productId)}`),
+        { method: 'DELETE' },
+      )
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || 'Failed to delete product')
+      }
+
+      setProductMessage('Product deleted.')
+      await fetchData()
+    } catch (err) {
+      const fallback =
+        err instanceof Error ? err.message : 'Could not delete product.'
+      setProductError(fallback)
+    } finally {
+      setDeletingProductId(null)
+      if (confirmProductId === productId) {
+        setConfirmProductId(null)
+      }
     }
   }
 
@@ -294,6 +330,39 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
                   <span className="pill">
                     Qty: {product.ProductQty} {product.Unit}
                   </span>
+                  {confirmProductId === product.ProductID ? (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span className="helper">Confirm?</span>
+                      <button
+                        type="button"
+                        className="chip danger"
+                        disabled={deletingProductId === product.ProductID}
+                        onClick={() => handleDeleteProduct(product.ProductID)}
+                      >
+                        {deletingProductId === product.ProductID
+                          ? 'Deleting...'
+                          : 'Yes'}
+                      </button>
+                      <button
+                        type="button"
+                        className="chip subtle"
+                        onClick={() => setConfirmProductId(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="chip danger"
+                      disabled={deletingProductId === product.ProductID}
+                      onClick={() => setConfirmProductId(product.ProductID)}
+                    >
+                      {deletingProductId === product.ProductID
+                        ? 'Deleting...'
+                        : 'Delete'}
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

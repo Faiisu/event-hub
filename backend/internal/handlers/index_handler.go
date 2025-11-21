@@ -42,6 +42,11 @@ func APIIndex(c *fiber.Ctx) error {
 			"description": "List products",
 		},
 		{
+			"method":      "DELETE",
+			"path":        "/api/products/:productId",
+			"description": "Delete a product",
+		},
+		{
 			"method":      "PUT",
 			"path":        "/api/products",
 			"description": "Create a new product",

@@ -36,88 +36,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/events": {
-            "get": {
-                "description": "Returns all events.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "List events",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Events"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Creates an event with owner, title, time range, and optional location/status.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "events"
-                ],
-                "summary": "Create a new event",
-                "parameters": [
-                    {
-                        "description": "Event data",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.createEventRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/models.Events"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/health": {
             "get": {
                 "description": "Returns the current status of the API.",
@@ -261,6 +179,54 @@ const docTemplate = `{
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/models.Products"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{productId}": {
+            "delete": {
+                "description": "Deletes a product by ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Delete a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID (UUID)",
+                        "name": "productId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
@@ -477,31 +443,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handlers.createEventRequest": {
-            "type": "object",
-            "properties": {
-                "EndAt": {
-                    "description": "RFC3339",
-                    "type": "string"
-                },
-                "EventOwner": {
-                    "type": "string"
-                },
-                "Location": {
-                    "type": "string"
-                },
-                "StartAt": {
-                    "description": "RFC3339",
-                    "type": "string"
-                },
-                "Status": {
-                    "type": "string"
-                },
-                "Title": {
-                    "type": "string"
-                }
-            }
-        },
         "handlers.createProductRequest": {
             "type": "object",
             "properties": {
@@ -557,38 +498,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "Password": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.Events": {
-            "type": "object",
-            "properties": {
-                "CreatedAt": {
-                    "type": "string"
-                },
-                "EndAt": {
-                    "type": "string"
-                },
-                "EventID": {
-                    "type": "string"
-                },
-                "EventOwner": {
-                    "type": "string"
-                },
-                "EventOwnerName": {
-                    "type": "string"
-                },
-                "Location": {
-                    "type": "string"
-                },
-                "StartAt": {
-                    "type": "string"
-                },
-                "Status": {
-                    "type": "string"
-                },
-                "Title": {
                     "type": "string"
                 }
             }
