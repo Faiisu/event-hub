@@ -4,6 +4,7 @@ import AuthFormCard from './components/AuthForm'
 import MainPage from './components/MainPage'
 import CreateEvent from './components/CreateEvent'
 import UserPage from './components/UserPage'
+import AdminDashboard from './components/AdminDashboard'
 import type { User } from './types/user'
 
 const LOCAL_STORAGE_USER_KEY = 'authUser'
@@ -11,6 +12,10 @@ const LOCAL_STORAGE_USER_KEY = 'authUser'
 type ViewKey = 'events' | 'create' | 'user'
 
 function App() {
+  const isAdminRoute =
+    typeof window !== 'undefined' &&
+    window.location.pathname.toLowerCase().startsWith('/admin')
+
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined)
   const [user, setUser] = useState<User | undefined>(undefined)
@@ -60,6 +65,17 @@ function App() {
     return (
       <div className="page centered">
         <AuthFormCard onLoginSuccess={handleLoginSuccess} />
+        {isAdminRoute && (
+          <p className="subhead">Admin access requires login.</p>
+        )}
+      </div>
+    )
+  }
+
+  if (isAdminRoute) {
+    return (
+      <div className="page centered">
+        <AdminDashboard user={user} email={userEmail} onLogout={handleLogout} />
       </div>
     )
   }

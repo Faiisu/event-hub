@@ -49,7 +49,7 @@ function MainPage({ user: _user, email }: MainPageProps) {
           <p className="helper">Latest events.</p>
         </div>
 
-        {loading && <div className="banner">Loading events...</div>}
+        {loading && <div>Loading events...</div>}
         {error && <div className="banner error">{error}</div>}
 
         {!loading && !error && events.length === 0 && (
