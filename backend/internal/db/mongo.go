@@ -20,7 +20,7 @@ var (
 	usersSetupErr  error
 )
 
-const defaultDBName = "event_blog"
+const defaultDBName = "event_hub"
 
 func getMongoURL() (string, error) {
 	url := os.Getenv("MONGO_URL")
