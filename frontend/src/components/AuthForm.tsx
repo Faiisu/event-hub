@@ -9,8 +9,8 @@ const emptyForm: AuthForm = {
 }
 
 const apiRoutes = {
-  login: '/api/auth/login',
-  signup: '/api/auth/signup',
+  login: '/api/login',
+  signup: '/api/register',
 }
 
 function AuthFormCard() {
@@ -46,15 +46,48 @@ function AuthFormCard() {
     return null
   }
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
+    setMessage(null)
+
     const error = validate()
     if (error) {
       setMessage(error)
       return
     }
 
-    // Replace with a real API call to your backend.
+    if (mode === 'login') {
+      try {
+        setMessage('Logging in...')
+        const response = await fetch(apiRoutes.login, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            Email: form.email,
+            Password: form.password,
+          }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          throw new Error(errorText || 'Login failed')
+        }
+
+        const body = await response.json().catch(() => null)
+        const successMessage =
+          (body && (body.message || body.Message)) || 'Logged in successfully.'
+        setMessage(successMessage)
+      } catch (err) {
+        const fallback =
+          err instanceof Error
+            ? err.message
+            : 'Could not complete login. Please try again.'
+        setMessage(fallback)
+      }
+      return
+    }
+
+    // Replace with a real API call to your backend for signup.
     const url = apiRoutes[mode]
     console.log(`Would POST to ${url}`, {
       email: form.email,
@@ -62,11 +95,7 @@ function AuthFormCard() {
       displayName: form.displayName,
     })
 
-    setMessage(
-      mode === 'login'
-        ? 'Logged in (demo). Replace with real request.'
-        : 'Account created (demo). Replace with real request.',
-    )
+    setMessage('Account created (demo). Replace with real request.')
   }
 
   return (
