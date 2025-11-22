@@ -36,6 +36,112 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/categories": {
+            "get": {
+                "description": "Returns categories filtered by StockID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "List categories by stock",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stock ID (UUID)",
+                        "name": "stockId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Categories"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates multiple categories in a single request.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "categories"
+                ],
+                "summary": "Bulk create categories",
+                "parameters": [
+                    {
+                        "description": "List of categories",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handlers.categoryRequest"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Categories"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/health": {
             "get": {
                 "description": "Returns the current status of the API.",
@@ -122,7 +228,7 @@ const docTemplate = `{
         },
         "/api/products": {
             "get": {
-                "description": "Returns all products.",
+                "description": "Returns products filtered by StockID.",
                 "produces": [
                     "application/json"
                 ],
@@ -130,6 +236,15 @@ const docTemplate = `{
                     "products"
                 ],
                 "summary": "List products",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Stock ID (UUID)",
+                        "name": "stockId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -313,7 +428,7 @@ const docTemplate = `{
         },
         "/api/stocks": {
             "get": {
-                "description": "Returns all stocks.",
+                "description": "Returns stocks filtered by UserID.",
                 "produces": [
                     "application/json"
                 ],
@@ -321,6 +436,15 @@ const docTemplate = `{
                     "stocks"
                 ],
                 "summary": "List stocks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID (UUID)",
+                        "name": "userId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -443,6 +567,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.categoryRequest": {
+            "type": "object",
+            "properties": {
+                "CategoryName": {
+                    "type": "string"
+                },
+                "Discription": {
+                    "type": "string"
+                },
+                "StockID": {
+                    "type": "string"
+                }
+            }
+        },
         "handlers.createProductRequest": {
             "type": "object",
             "properties": {
@@ -498,6 +636,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "Password": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Categories": {
+            "type": "object",
+            "properties": {
+                "CategoryID": {
+                    "type": "string"
+                },
+                "CategoryName": {
+                    "type": "string"
+                },
+                "Discription": {
+                    "type": "string"
+                },
+                "StockID": {
                     "type": "string"
                 }
             }

@@ -62,13 +62,24 @@ func DeleteProduct(c *fiber.Ctx) error {
 
 // ListProducts godoc
 // @Summary      List products
-// @Description  Returns all products.
+// @Description  Returns products filtered by StockID.
 // @Tags         products
 // @Produce      json
+// @Param        stockId  query  string  true  "Stock ID (UUID)"
 // @Success      200  {array}   models.Products
 // @Failure      500  {object}  map[string]string
 // @Router       /api/products [get]
 func ListProducts(c *fiber.Ctx) error {
+	stockIDParam := strings.TrimSpace(c.Query("stockId"))
+	if stockIDParam == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "stockId is required")
+	}
+
+	stockUUID, err := uuid.Parse(stockIDParam)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "stockId must be a valid UUID")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -77,7 +88,7 @@ func ListProducts(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
 
-	cursor, err := collection.Find(ctx, bson.D{})
+	cursor, err := collection.Find(ctx, bson.M{"StockID": stockUUID})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch products")
 	}

@@ -17,9 +17,21 @@ type ProductForm = {
   productQty: number
 }
 
+type CategoryItem = {
+  CategoryName: string
+  Discription?: string
+  StockID: string
+}
+
+type CategoryDraft = {
+  name: string
+  description: string
+}
+
 function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
   const [stock, setStock] = useState<StockItem | null>(null)
   const [products, setProducts] = useState<ProductItem[]>([])
+  const [categories, setCategories] = useState<CategoryItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [productForm, setProductForm] = useState<ProductForm>({
@@ -33,11 +45,30 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
   const [submittingProduct, setSubmittingProduct] = useState(false)
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
   const [confirmProductId, setConfirmProductId] = useState<string | null>(null)
+  const [categoryDrafts, setCategoryDrafts] = useState<CategoryDraft[]>([
+    { name: '', description: '' },
+  ])
+  const [categoryMessage, setCategoryMessage] = useState<string | null>(null)
+  const [categoryError, setCategoryError] = useState<string | null>(null)
+  const [submittingCategories, setSubmittingCategories] = useState(false)
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false)
 
   const normalizedStockName = useMemo(
     () => stockName.trim().toLowerCase(),
     [stockName],
   )
+
+  const getCachedStocks = () => {
+    if (typeof window === 'undefined') return []
+    const raw = localStorage.getItem('stocks-cache')
+    if (!raw) return []
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
 
   const fetchData = async () => {
     if (!normalizedStockName) {
@@ -45,47 +76,63 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       return
     }
 
+    const cachedStocks = getCachedStocks() as StockItem[]
+    const matchedStock =
+      Array.isArray(cachedStocks) &&
+      cachedStocks.find(
+        (s) => s.StockName?.trim().toLowerCase() === normalizedStockName,
+      )
+
+    if (!matchedStock) {
+      setStock(null)
+      setProducts([])
+      setCategories([])
+      setError('Stock not found locally. Reopen from Stocks page to refresh.')
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
-      const [stocksRes, productsRes] = await Promise.all([
-        fetch(apiUrl('/api/stocks')),
-        fetch(apiUrl('/api/products')),
-      ])
+      setStock(matchedStock)
 
-      if (!stocksRes.ok) {
-        const text = await stocksRes.text()
-        throw new Error(text || 'Failed to load stocks')
-      }
+      const [productsRes, categoriesRes] = await Promise.all([
+        fetch(
+          apiUrl(
+            `/api/products?stockId=${encodeURIComponent(matchedStock.StockID)}`,
+          ),
+        ),
+        fetch(
+          apiUrl(
+            `/api/categories?stockId=${encodeURIComponent(
+              matchedStock.StockID,
+            )}`,
+          ),
+        ),
+      ])
 
       if (!productsRes.ok) {
         const text = await productsRes.text()
         throw new Error(text || 'Failed to load products')
       }
 
-      const stocksBody = (await stocksRes.json()) as StockItem[]
-      const productsBody = (await productsRes.json()) as ProductItem[]
-
-      const matchedStock =
-        Array.isArray(stocksBody) &&
-        stocksBody.find(
-          (s) => s.StockName?.trim().toLowerCase() === normalizedStockName,
-        )
-
-      if (!matchedStock) {
-        setStock(null)
-        setProducts([])
-        setError('Stock not found.')
-        return
+      if (!categoriesRes.ok) {
+        const text = await categoriesRes.text()
+        throw new Error(text || 'Failed to load categories')
       }
 
-      setStock(matchedStock)
+      const productsBody = (await productsRes.json()) as ProductItem[]
+      const categoriesBody = (await categoriesRes.json()) as CategoryItem[]
 
       const filteredProducts = Array.isArray(productsBody)
         ? productsBody.filter((p) => p.StockID === matchedStock.StockID)
         : []
 
       setProducts(filteredProducts)
+      const filteredCategories = Array.isArray(categoriesBody)
+        ? categoriesBody.filter((c) => c.StockID === matchedStock.StockID)
+        : []
+      setCategories(filteredCategories)
     } catch (err) {
       const fallback =
         err instanceof Error ? err.message : 'Unable to load products.'
@@ -99,6 +146,16 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     fetchData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [normalizedStockName])
+
+  useEffect(() => {
+    if (!productForm.category && categories.length > 0) {
+      setProductForm((prev) => ({
+        ...prev,
+        category: categories[0]?.CategoryName || '',
+      }))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories])
 
   const handleCreateProduct = async () => {
     setProductMessage(null)
@@ -114,8 +171,13 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       return
     }
 
+    if (!productForm.category) {
+      setProductError('Select a category.')
+      return
+    }
+
     const payload = {
-      Category: productForm.category.trim(),
+      Category: productForm.category,
       ProductName: trimmedName,
       ProductQty: Number(productForm.productQty) || 0,
       StockID: stock.StockID,
@@ -153,6 +215,78 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       setProductError(fallback)
     } finally {
       setSubmittingProduct(false)
+    }
+  }
+
+  const handleCategoryChange = (
+    index: number,
+    field: keyof CategoryDraft,
+    value: string,
+  ) => {
+    setCategoryDrafts((prev) =>
+      prev.map((draft, i) =>
+        i === index ? { ...draft, [field]: value } : draft,
+      ),
+    )
+  }
+
+  const handleAddCategoryRow = () => {
+    setCategoryDrafts((prev) => [...prev, { name: '', description: '' }])
+  }
+
+  const handleRemoveCategoryRow = (index: number) => {
+    setCategoryDrafts((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleCreateCategories = async () => {
+    setCategoryMessage(null)
+    setCategoryError(null)
+    if (!stock) {
+      setCategoryError('Cannot add categories: stock not loaded.')
+      return
+    }
+
+    const payload = categoryDrafts
+      .map((draft) => ({
+        CategoryName: draft.name.trim(),
+        Discription: draft.description.trim(),
+        StockID: stock.StockID,
+      }))
+      .filter((item) => item.CategoryName)
+  
+    if (payload.length === 0) {
+      setCategoryError('Add at least one category name.')
+      return
+    }
+
+    console.log(JSON.stringify(payload))
+    setSubmittingCategories(true)
+    try {
+      const response = await fetch(apiUrl('/api/categories'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || 'Failed to add categories')
+      }
+
+      const body = await response.json().catch(() => null)
+      const successMessage =
+        (body && (body.message || body.Message)) ||
+        'Categories added successfully.'
+      setCategoryMessage(successMessage)
+      setCategoryDrafts([{ name: '', description: '' }])
+      setShowCategoriesModal(false)
+      await fetchData()
+    } catch (err) {
+      const fallback =
+        err instanceof Error ? err.message : 'Could not add categories.'
+      setCategoryError(fallback)
+    } finally {
+      setSubmittingCategories(false)
     }
   }
 
@@ -202,7 +336,11 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
         <div className="stat-card teal">
           <p className="stat-label">Products</p>
           <p className="stat-value">{products.length}</p>
-        </div>        
+        </div>
+        <div className="stat-card teal">
+          <p className="stat-label">Categories</p>
+          <p className="stat-value">{categories.length}</p>
+        </div>
       </div>
 
       <div className="main-actions">
@@ -238,18 +376,42 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
           <div className="field-row">
             <label className="field">
               <span>Category</span>
-              <input
-                name="category"
-                type="text"
-                placeholder="e.g. Packaging"
-                value={productForm.category}
-                onChange={(e) =>
-                  setProductForm((prev) => ({
-                    ...prev,
-                    category: e.target.value,
-                  }))
-                }
-              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <select
+                  name="category"
+                  className = "select"
+                  style={{ flex: 1 }}
+                  value={productForm.category}
+                  disabled={categories.length === 0}
+                  onChange={(e) =>
+                    setProductForm((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select category</option>
+                  {categories.map((category) => (
+                    <option
+                      key={`${category.StockID}-${category.CategoryName}`}
+                      value={category.CategoryName}
+                    >
+                      {category.CategoryName}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="chip"
+                  onClick={() => {
+                    setCategoryMessage(null)
+                    setCategoryError(null)
+                    setShowCategoriesModal(true)
+                  }}
+                >
+                  + Create
+                </button>
+              </div>
             </label>
             <label className="field">
               <span>Unit</span>
@@ -267,7 +429,15 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
               />
             </label>
           </div>
-
+          {categories.length === 0 ? (
+                <p className="helper">
+                  No categories yet. Create them to enable product creation.
+                </p>
+              ) : (
+                <p className="helper">
+                  Need another? Use “Create” to add more categories.
+                </p>
+              )}
           <label className="field">
             <span>Quantity</span>
             <input
@@ -292,7 +462,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
           <button
             type="button"
             className="submit"
-            disabled={submittingProduct || !stock}
+            disabled={submittingProduct || !stock || categories.length === 0}
             onClick={handleCreateProduct}
           >
             {submittingProduct ? 'Saving...' : 'Add product'}
@@ -304,7 +474,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
         <div className="event-header">
           <h2>Products</h2>
           <p className="helper">
-            Showing products for StockID {stock?.StockID || '--'}.
+            Showing products for {stockName}.
           </p>
         </div>
 
@@ -369,6 +539,123 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
           </div>
         )}
       </div>
+
+      {showCategoriesModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.35)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: 16,
+          }}
+        >
+          <div
+            className="event-card"
+            style={{
+              width: 'min(900px, 100%)',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              padding: 20,
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18)',
+              position: 'relative',
+            }}
+          >
+            <button
+              type="button"
+              className="chip subtle"
+              onClick={() => setShowCategoriesModal(false)}
+              aria-label="Close"
+              style={{
+                position: 'absolute',
+                top: 12,
+                right: 12,
+              }}
+            >
+              ×
+            </button>
+
+            <div className="event-header" style={{ alignItems: 'flex-start' }}>
+              <div>
+                <h2>Create categories</h2>
+                <p className="helper">
+                  Add one or more categories, then save them to this stock.
+                </p>
+              </div>
+            </div>
+
+            <div className="event-form" style={{ gap: 12 }}>
+              {categoryDrafts.map((draft, index) => (
+                <div key={`category-${index}`} className="field-row">
+                  <label className="field" style={{ flex: 1 }}>
+                    <span>Category name</span>
+                    <input
+                      type="text"
+                      placeholder="e.g. Packaging"
+                      value={draft.name}
+                      onChange={(e) =>
+                        handleCategoryChange(index, 'name', e.target.value)
+                      }
+                    />
+                  </label>
+                  <label className="field" style={{ flex: 1 }}>
+                    <span>Description (optional)</span>
+                    <input
+                      type="text"
+                      placeholder="Short description"
+                      value={draft.description}
+                      onChange={(e) =>
+                        handleCategoryChange(index, 'description', e.target.value)
+                      }
+                    />
+                  </label>
+                  {categoryDrafts.length > 1 && (
+                    <button
+                      type="button"
+                      className="chip subtle"
+                      onClick={() => handleRemoveCategoryRow(index)}
+                      style={{ alignSelf: 'flex-end', marginBottom: 4 }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="chip"
+                  onClick={handleAddCategoryRow}
+                  disabled={submittingCategories}
+                >
+                  + Add another
+                </button>
+                <button
+                  type="button"
+                  className="submit"
+                  onClick={handleCreateCategories}
+                  disabled={submittingCategories}
+                >
+                  {submittingCategories ? 'Saving...' : 'Save categories'}
+                </button>
+              </div>
+
+              {categoryMessage && (
+                <div className="banner success">{categoryMessage}</div>
+              )}
+              {categoryError && (
+                <div className="banner error">{categoryError}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

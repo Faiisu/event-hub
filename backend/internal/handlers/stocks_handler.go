@@ -69,13 +69,24 @@ func DeleteStock(c *fiber.Ctx) error {
 
 // ListStocks godoc
 // @Summary      List stocks
-// @Description  Returns all stocks.
+// @Description  Returns stocks filtered by UserID.
 // @Tags         stocks
 // @Produce      json
+// @Param        userId  query  string  true  "User ID (UUID)"
 // @Success      200  {array}   models.Stocks
 // @Failure      500  {object}  map[string]string
 // @Router       /api/stocks [get]
 func ListStocks(c *fiber.Ctx) error {
+	userIDParam := strings.TrimSpace(c.Query("userId"))
+	if userIDParam == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "userId is required")
+	}
+
+	userUUID, err := uuid.Parse(userIDParam)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "userId must be a valid UUID")
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -84,7 +95,7 @@ func ListStocks(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
 
-	cursor, err := collection.Find(ctx, bson.D{})
+	cursor, err := collection.Find(ctx, bson.M{"UserID": userUUID})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch stocks")
 	}

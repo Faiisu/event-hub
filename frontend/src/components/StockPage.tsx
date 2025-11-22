@@ -28,16 +28,34 @@ function StockPage({ user }: StockPageProps) {
   const userId = user?.UserId ?? user?.UserID ?? ''
 
   const fetchStocks = async () => {
+    if (!userId) {
+      setError('Missing user id to load stocks.')
+      setStocks([])
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('stocks-cache')
+      }
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(apiUrl('/api/stocks'))
+      const response = await fetch(
+        apiUrl(`/api/stocks?userId=${encodeURIComponent(userId)}`),
+      )
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(errorText || 'Failed to load stocks')
       }
       const body = (await response.json()) as StockItem[]
       setStocks(Array.isArray(body) ? body : [])
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('stocks-cache', JSON.stringify(body ?? []))
+        } catch {
+          // ignore cache write failures
+        }
+      }
     } catch (err) {
       const fallback =
         err instanceof Error ? err.message : 'Could not load stocks.'
@@ -49,7 +67,7 @@ function StockPage({ user }: StockPageProps) {
 
   useEffect(() => {
     fetchStocks()
-  }, [])
+  }, [userId])
 
   const handleCreateStock = async (event: FormEvent) => {
     event.preventDefault()

@@ -175,3 +175,25 @@ func StocksCollection(ctx context.Context) (*mongo.Collection, error) {
 
 	return database.Collection("stocks"), nil
 }
+
+// CategoriesCollection returns the categories collection, creating it if missing.
+func CategoriesCollection(ctx context.Context) (*mongo.Collection, error) {
+	c, err := Client(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	database := c.Database(dbName())
+
+	names, err := database.ListCollectionNames(ctx, bson.D{{Key: "name", Value: "categories"}})
+	if err != nil {
+		return nil, err
+	}
+	if len(names) == 0 {
+		if err := database.CreateCollection(ctx, "categories"); err != nil {
+			return nil, err
+		}
+	}
+
+	return database.Collection("categories"), nil
+}

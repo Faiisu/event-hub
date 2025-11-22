@@ -73,3 +73,21 @@ export default defineConfig([
   },
 ])
 ```
+
+## Docker
+
+Build a production image (uses multi-stage build with Nginx):
+
+```bash
+docker build -t personal-stock-frontend --build-arg BACKEND_IP=192.168.1.5:8080 .
+```
+
+Run the container (static assets served by Nginx):
+
+```bash
+docker run --rm -p 8080:80 personal-stock-frontend
+```
+
+Open the app at http://localhost:8080
+
+> `.env` is excluded from the build context; pass `BACKEND_IP` explicitly if the frontend must call a specific backend host.

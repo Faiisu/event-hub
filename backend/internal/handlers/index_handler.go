@@ -53,6 +53,11 @@ func APIIndex(c *fiber.Ctx) error {
 		},
 		{
 			"method":      "GET",
+			"path":        "/api/categories",
+			"description": "List categories for a stock",
+		},
+		{
+			"method":      "GET",
 			"path":        "/api/stocks",
 			"description": "List stocks",
 		},
@@ -65,6 +70,11 @@ func APIIndex(c *fiber.Ctx) error {
 			"method":      "DELETE",
 			"path":        "/api/stocks/:stockId",
 			"description": "Delete a stock and related products",
+		},
+		{
+			"method":      "POST",
+			"path":        "/api/categories",
+			"description": "Create categories in bulk",
 		},
 	}
 

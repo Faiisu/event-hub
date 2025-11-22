@@ -173,6 +173,41 @@ h1 {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.select {
+  width: 100%;
+  padding: 12px 42px 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+  color: var(--text);
+  font-size: 15px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  appearance: none;
+  background-image:
+    linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235b6474' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat, no-repeat;
+  background-position: 0 0, right 14px center;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(76, 133, 245, 0.25);
+  background: #ffffff;
+}
+
+.select:hover {
+  border-color: var(--accent);
+  background: #ffffff;
+}
+
+.select:disabled {
+  background: #f1f3f7;
+  color: var(--text-dim);
+  cursor: not-allowed;
+}
+
 .banner {
   padding: 12px 14px;
   border-radius: 10px;
