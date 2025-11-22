@@ -18,6 +18,7 @@ type ProductForm = {
 }
 
 type CategoryItem = {
+  CategoryID?: string
   CategoryName: string
   Discription?: string
   StockID: string
@@ -52,6 +53,9 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [submittingCategories, setSubmittingCategories] = useState(false)
   const [showCategoriesModal, setShowCategoriesModal] = useState(false)
+  const [deletingCategoryId, setDeletingCategoryId] = useState<string | null>(
+    null,
+  )
 
   const normalizedStockName = useMemo(
     () => stockName.trim().toLowerCase(),
@@ -290,6 +294,43 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     }
   }
 
+  const handleDeleteCategory = async (category: CategoryItem) => {
+    setCategoryMessage(null)
+    setCategoryError(null)
+    if (!stock) {
+      setCategoryError('Cannot delete category: stock not loaded.')
+      return
+    }
+
+    const categoryId = category.CategoryID || category.CategoryName
+    if (!categoryId) {
+      setCategoryError('Missing category id.')
+      return
+    }
+
+    setDeletingCategoryId(categoryId)
+    try {
+      const response = await fetch(
+        apiUrl(`/api/categories/${encodeURIComponent(categoryId)}`),
+        { method: 'DELETE' },
+      )
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || 'Failed to delete category')
+      }
+
+      setCategoryMessage('Category deleted.')
+      await fetchData()
+    } catch (err) {
+      const fallback =
+        err instanceof Error ? err.message : 'Could not delete category.'
+      setCategoryError(fallback)
+    } finally {
+      setDeletingCategoryId(null)
+    }
+  }
+
   const handleDeleteProduct = async (productId: string) => {
     setProductMessage(null)
     setProductError(null)
@@ -379,7 +420,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <select
                   name="category"
-                  className = "select"
+                  className="select"
                   style={{ flex: 1 }}
                   value={productForm.category}
                   disabled={categories.length === 0}
@@ -409,7 +450,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
                     setShowCategoriesModal(true)
                   }}
                 >
-                  + Create
+                  Manage
                 </button>
               </div>
             </label>
@@ -430,14 +471,14 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
             </label>
           </div>
           {categories.length === 0 ? (
-                <p className="helper">
-                  No categories yet. Create them to enable product creation.
-                </p>
-              ) : (
-                <p className="helper">
-                  Need another? Use “Create” to add more categories.
-                </p>
-              )}
+            <p className="helper">
+              No categories yet. Use “Manage” to add and enable product creation.
+            </p>
+          ) : (
+            <p className="helper">
+              Need another category? Open “Manage” to add or remove.
+            </p>
+          )}
           <label className="field">
             <span>Quantity</span>
             <input
@@ -492,7 +533,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
                 <div className="product-meta">
                   <p className="event-title">{product.ProductName}</p>
                   <p className="helper">
-                    ProductID: {product.ProductID} - Category:{' '}
+                    Category:{' '}
                     {product.Category || '--'}
                   </p>
                 </div>
@@ -577,73 +618,127 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
                 right: 12,
               }}
             >
-              ×
+              x
             </button>
 
             <div className="event-header" style={{ alignItems: 'flex-start' }}>
               <div>
-                <h2>Create categories</h2>
+                <h2>Manage categories</h2>
                 <p className="helper">
-                  Add one or more categories, then save them to this stock.
+                  Review, delete, or add categories for this stock.
                 </p>
               </div>
             </div>
 
-            <div className="event-form" style={{ gap: 12 }}>
-              {categoryDrafts.map((draft, index) => (
-                <div key={`category-${index}`} className="field-row">
-                  <label className="field" style={{ flex: 1 }}>
-                    <span>Category name</span>
-                    <input
-                      type="text"
-                      placeholder="e.g. Packaging"
-                      value={draft.name}
-                      onChange={(e) =>
-                        handleCategoryChange(index, 'name', e.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="field" style={{ flex: 1 }}>
-                    <span>Description (optional)</span>
-                    <input
-                      type="text"
-                      placeholder="Short description"
-                      value={draft.description}
-                      onChange={(e) =>
-                        handleCategoryChange(index, 'description', e.target.value)
-                      }
-                    />
-                  </label>
-                  {categoryDrafts.length > 1 && (
+            <div className="event-form" style={{ gap: 16 }}>
+              <div>
+                <p className="helper" style={{ marginBottom: 8 }}>
+                  Existing categories
+                </p>
+                {categories.length === 0 ? (
+                  <p className="subhead">No categories yet.</p>
+                ) : (
+                  <div className="product-list">
+                    {categories.map((category) => (
+                      <div
+                        key={category.CategoryID || category.CategoryName}
+                        className="product-row"
+                      >
+                        <div className="product-meta">
+                          <p className="event-title">{category.CategoryName}</p>
+                          <p className="helper">
+                            {category.Discription || 'No description'}
+                          </p>
+                        </div>
+                        <div className="product-pill">
+                          <button
+                            type="button"
+                            className="chip danger"
+                            disabled={
+                              deletingCategoryId ===
+                              (category.CategoryID || category.CategoryName)
+                            }
+                            onClick={() =>
+                              handleDeleteCategory(category)
+                            }
+                          >
+                            {deletingCategoryId ===
+                            (category.CategoryID || category.CategoryName)
+                              ? 'Deleting...'
+                              : 'Delete'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <p className="helper" style={{ marginBottom: 8 }}>
+                  Add categories
+                </p>
+                <div className="event-form" style={{ gap: 12 }}>
+                  {categoryDrafts.map((draft, index) => (
+                    <div key={`category-${index}`} className="field-row">
+                      <label className="field" style={{ flex: 1 }}>
+                        <span>Category name</span>
+                        <input
+                          type="text"
+                          placeholder="e.g. Packaging"
+                          value={draft.name}
+                          onChange={(e) =>
+                            handleCategoryChange(index, 'name', e.target.value)
+                          }
+                        />
+                      </label>
+                      <label className="field" style={{ flex: 1 }}>
+                        <span>Description (optional)</span>
+                        <input
+                          type="text"
+                          placeholder="Short description"
+                          value={draft.description}
+                          onChange={(e) =>
+                            handleCategoryChange(
+                              index,
+                              'description',
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </label>
+                      {categoryDrafts.length > 1 && (
+                        <button
+                          type="button"
+                          className="chip subtle"
+                          onClick={() => handleRemoveCategoryRow(index)}
+                          style={{ alignSelf: 'flex-end', marginBottom: 4 }}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     <button
                       type="button"
-                      className="chip subtle"
-                      onClick={() => handleRemoveCategoryRow(index)}
-                      style={{ alignSelf: 'flex-end', marginBottom: 4 }}
+                      className="chip"
+                      onClick={handleAddCategoryRow}
+                      disabled={submittingCategories}
                     >
-                      Remove
+                      + Add another
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      className="submit"
+                      onClick={handleCreateCategories}
+                      disabled={submittingCategories}
+                    >
+                      {submittingCategories ? 'Saving...' : 'Save categories'}
+                    </button>
+                  </div>
                 </div>
-              ))}
-
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  className="chip"
-                  onClick={handleAddCategoryRow}
-                  disabled={submittingCategories}
-                >
-                  + Add another
-                </button>
-                <button
-                  type="button"
-                  className="submit"
-                  onClick={handleCreateCategories}
-                  disabled={submittingCategories}
-                >
-                  {submittingCategories ? 'Saving...' : 'Save categories'}
-                </button>
               </div>
 
               {categoryMessage && (
