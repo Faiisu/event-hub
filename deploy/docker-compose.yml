@@ -1,14 +1,7 @@
 version: "3.9"
 
+name: personal-stocks-management
 services:
-  mongo:
-    image: mongo:7.0
-    restart: unless-stopped
-    volumes:
-      - mongo-data:/data/db
-    ports:
-      - "${MONGO_PORT:-27017}:27017"
-
   backend:
     build:
       context: ..
@@ -18,11 +11,10 @@ services:
     environment:
       MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017}
       MONGO_DB_NAME: ${MONGO_DB_NAME:-event_hub}
-    depends_on:
-      - mongo
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     restart: unless-stopped
+    container_name: backend
 
   frontend:
     build:
@@ -35,6 +27,6 @@ services:
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     restart: unless-stopped
-
+    container_name: frontend
 volumes:
   mongo-data:
