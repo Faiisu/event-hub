@@ -19,7 +19,7 @@ const normalizeBackendUrl = (host?: string) => {
 }
 
 const env = import.meta.env as Record<string, string | undefined>
-const backendHost = env.backend_ip ?? env.VITE_BACKEND_IP
+const backendHost = env.VITE_BACKEND_IP
 const backendBaseUrl = normalizeBackendUrl(backendHost)
 
 const apiRoutes = {
@@ -106,7 +106,7 @@ function AuthFormCard({ onLoginSuccess }: AuthFormProps) {
 
     // Replace with a real API call to your backend for signup.
     try {
-      setMessage('Creating account...')
+      setMessage('Creating account...') 
       const response = await fetch(apiRoutes.signup, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

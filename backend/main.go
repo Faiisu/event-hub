@@ -33,8 +33,12 @@ func main() {
 
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*", // Vite URL
-		AllowHeaders: "Origin, Content-Type, Accept",
+
+		AllowOrigins: "http://167.71.218.173:3000/",
+
+		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
+		AllowCredentials: true,
 	}))
 
 	// swagger routes

@@ -7,8 +7,7 @@ RUN npm ci
 
 COPY frontend ./
 
-ARG BACKEND_IP=localhost:3000
-ENV VITE_BACKEND_IP=${BACKEND_IP}
+ENV VITE_BACKEND_IP=167.71.218.173:8080
 ENV NODE_ENV=production
 
 RUN npm run build
