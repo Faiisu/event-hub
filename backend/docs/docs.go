@@ -483,16 +483,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/stocks": {
+        "/api/warehouse": {
             "get": {
-                "description": "Returns stocks filtered by UserID.",
+                "description": "Returns warehouse filtered by UserID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
-                "summary": "List stocks",
+                "summary": "List warehouse",
                 "parameters": [
                     {
                         "type": "string",
@@ -508,7 +508,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Stocks"
+                                "$ref": "#/definitions/models.Warehouse"
                             }
                         }
                     },
@@ -532,7 +532,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
                 "summary": "Create a stock",
                 "parameters": [
@@ -550,7 +550,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Stocks"
+                            "$ref": "#/definitions/models.Warehouse"
                         }
                     },
                     "400": {
@@ -574,14 +574,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/stocks/{stockId}": {
+        "/api/warehouse/{stockId}": {
             "delete": {
                 "description": "Deletes a stock by ID and removes related products with the same StockID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
                 "summary": "Delete a stock",
                 "parameters": [
@@ -737,7 +737,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Stocks": {
+        "models.Warehouse": {
             "type": "object",
             "properties": {
                 "StockID": {
@@ -780,8 +780,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Event Blog API",
-	Description:      "Public HTTP endpoints for the Event Blog backend.",
+		Title:            "Personal Warehouse Management API",
+		Description:      "Public HTTP endpoints for the Personal Warehouse Management backend.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

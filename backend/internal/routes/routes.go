@@ -15,9 +15,9 @@ func RegisterRoutes(app *fiber.App) {
 	app.Delete("/api/products/:productId", handlers.DeleteProduct)
 	app.Put("/api/products", handlers.CreateProduct)
 	app.Get("/api/categories", handlers.ListCategories)
-	app.Get("/api/stocks", handlers.ListStocks)
-	app.Post("/api/stocks", handlers.CreateStock)
-	app.Delete("/api/stocks/:stockId", handlers.DeleteStock)
+	app.Get("/api/warehouse", handlers.ListWarehouse)
+	app.Post("/api/warehouse", handlers.CreateStock)
+	app.Delete("/api/warehouse/:stockId", handlers.DeleteStock)
 	app.Post("/api/categories", handlers.CreateCategories)
 	app.Delete("/api/categories/:categoryId", handlers.DeleteCategory)
 }

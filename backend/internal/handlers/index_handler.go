@@ -58,17 +58,17 @@ func APIIndex(c *fiber.Ctx) error {
 		},
 		{
 			"method":      "GET",
-			"path":        "/api/stocks",
-			"description": "List stocks",
+			"path":        "/api/warehouse",
+			"description": "List warehouse",
 		},
 		{
 			"method":      "POST",
-			"path":        "/api/stocks",
+			"path":        "/api/warehouse",
 			"description": "Create a stock",
 		},
 		{
 			"method":      "DELETE",
-			"path":        "/api/stocks/:stockId",
+			"path":        "/api/warehouse/:stockId",
 			"description": "Delete a stock and related products",
 		},
 		{

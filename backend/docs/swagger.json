@@ -1,8 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "Public HTTP endpoints for the Event Blog backend.",
-        "title": "Event Blog API",
+        "description": "Public HTTP endpoints for the Personal Warehouse Management backend.",
+        "title": "Personal Warehouse Management API",
         "contact": {},
         "version": "1.0"
     },
@@ -477,16 +477,16 @@
                 }
             }
         },
-        "/api/stocks": {
+        "/api/warehouse": {
             "get": {
-                "description": "Returns stocks filtered by UserID.",
+                "description": "Returns warehouse filtered by UserID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
-                "summary": "List stocks",
+                "summary": "List warehouse",
                 "parameters": [
                     {
                         "type": "string",
@@ -502,7 +502,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Stocks"
+                                "$ref": "#/definitions/models.Warehouse"
                             }
                         }
                     },
@@ -526,7 +526,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
                 "summary": "Create a stock",
                 "parameters": [
@@ -544,7 +544,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.Stocks"
+                            "$ref": "#/definitions/models.Warehouse"
                         }
                     },
                     "400": {
@@ -568,14 +568,14 @@
                 }
             }
         },
-        "/api/stocks/{stockId}": {
+        "/api/warehouse/{stockId}": {
             "delete": {
                 "description": "Deletes a stock by ID and removes related products with the same StockID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "stocks"
+                    "warehouse"
                 ],
                 "summary": "Delete a stock",
                 "parameters": [
@@ -731,7 +731,7 @@
                 }
             }
         },
-        "models.Stocks": {
+        "models.Warehouse": {
             "type": "object",
             "properties": {
                 "StockID": {

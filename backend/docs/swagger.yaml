@@ -73,7 +73,7 @@ definitions:
       Unit:
         type: string
     type: object
-  models.Stocks:
+  models.Warehouse:
     properties:
       StockID:
         type: string
@@ -98,8 +98,8 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: Public HTTP endpoints for the Event Blog backend.
-  title: Event Blog API
+  description: Public HTTP endpoints for the Personal Warehouse Management backend.
+  title: Personal Warehouse Management API
   version: "1.0"
 paths:
   /api:
@@ -412,9 +412,9 @@ paths:
       summary: Register a new user
       tags:
       - users
-  /api/stocks:
+  /api/warehouse:
     get:
-      description: Returns stocks filtered by UserID.
+      description: Returns warehouse filtered by UserID.
       parameters:
       - description: User ID (UUID)
         in: query
@@ -428,7 +428,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Stocks'
+              $ref: '#/definitions/models.Warehouse'
             type: array
         "500":
           description: Internal Server Error
@@ -436,9 +436,9 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: List stocks
+      summary: List warehouse
       tags:
-      - stocks
+      - warehouse
     post:
       consumes:
       - application/json
@@ -456,7 +456,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Stocks'
+            $ref: '#/definitions/models.Warehouse'
         "400":
           description: Bad Request
           schema:
@@ -471,8 +471,8 @@ paths:
             type: object
       summary: Create a stock
       tags:
-      - stocks
-  /api/stocks/{stockId}:
+      - warehouse
+  /api/warehouse/{stockId}:
     delete:
       description: Deletes a stock by ID and removes related products with the same
         StockID.
@@ -504,5 +504,5 @@ paths:
             type: object
       summary: Delete a stock
       tags:
-      - stocks
+      - warehouse
 swagger: "2.0"

@@ -21,13 +21,13 @@ type createStockRequest struct {
 // DeleteStock godoc
 // @Summary      Delete a stock
 // @Description  Deletes a stock by ID and removes related products with the same StockID.
-// @Tags         stocks
+// @Tags         warehouse
 // @Produce      json
 // @Param        stockId  path  string  true  "Stock ID (UUID)"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /api/stocks/{stockId} [delete]
+// @Router       /api/warehouse/{stockId} [delete]
 func DeleteStock(c *fiber.Ctx) error {
 	stockIDParam := strings.TrimSpace(c.Params("stockId"))
 	if stockIDParam == "" {
@@ -42,7 +42,7 @@ func DeleteStock(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	stocksCol, err := db.StocksCollection(ctx)
+	warehouseCol, err := db.WarehouseCollection(ctx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
@@ -51,7 +51,7 @@ func DeleteStock(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
 
-	stockRes, err := stocksCol.DeleteOne(ctx, bson.M{"StockID": stockUUID})
+	stockRes, err := warehouseCol.DeleteOne(ctx, bson.M{"StockID": stockUUID})
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "failed to delete stock")
 	}
@@ -67,16 +67,16 @@ func DeleteStock(c *fiber.Ctx) error {
 	})
 }
 
-// ListStocks godoc
-// @Summary      List stocks
-// @Description  Returns stocks filtered by UserID.
-// @Tags         stocks
+// ListWarehouse godoc
+// @Summary      List warehouse
+// @Description  Returns warehouse filtered by UserID.
+// @Tags         warehouse
 // @Produce      json
 // @Param        userId  query  string  true  "User ID (UUID)"
-// @Success      200  {array}   models.Stocks
+// @Success      200  {array}   models.Warehouse
 // @Failure      500  {object}  map[string]string
-// @Router       /api/stocks [get]
-func ListStocks(c *fiber.Ctx) error {
+// @Router       /api/warehouse [get]
+func ListWarehouse(c *fiber.Ctx) error {
 	userIDParam := strings.TrimSpace(c.Query("userId"))
 	if userIDParam == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "userId is required")
@@ -90,36 +90,36 @@ func ListStocks(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection, err := db.StocksCollection(ctx)
+	collection, err := db.WarehouseCollection(ctx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
 
 	cursor, err := collection.Find(ctx, bson.M{"UserID": userUUID})
 	if err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch stocks")
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to fetch warehouse")
 	}
 	defer cursor.Close(ctx)
 
-	var stocks []models.Stocks
-	if err := cursor.All(ctx, &stocks); err != nil {
-		return fiber.NewError(fiber.StatusInternalServerError, "failed to decode stocks")
+	var warehouse []models.Warehouse
+	if err := cursor.All(ctx, &warehouse); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "failed to decode warehouse")
 	}
 
-	return c.JSON(stocks)
+	return c.JSON(warehouse)
 }
 
 // CreateStock godoc
 // @Summary      Create a stock
 // @Description  Creates a new stock record.
-// @Tags         stocks
+// @Tags         warehouse
 // @Accept       json
 // @Produce      json
 // @Param        payload  body      createStockRequest  true  "Stock data"
-// @Success      201  {object}  models.Stocks
+// @Success      201  {object}  models.Warehouse
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /api/stocks [post]
+// @Router       /api/warehouse [post]
 func CreateStock(c *fiber.Ctx) error {
 	var req createStockRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -141,12 +141,12 @@ func CreateStock(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	collection, err := db.StocksCollection(ctx)
+	collection, err := db.WarehouseCollection(ctx)
 	if err != nil {
 		return fiber.NewError(fiber.StatusInternalServerError, "database unavailable")
 	}
 
-	stock := models.Stocks{
+	stock := models.Warehouse{
 		StockID:   uuid.New(),
 		UserID:    userUUID,
 		StockName: req.StockName,
