@@ -62,9 +62,9 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     [stockName],
   )
 
-  const getCachedStocks = () => {
+  const getCachedWarehouse = () => {
     if (typeof window === 'undefined') return []
-    const raw = localStorage.getItem('stocks-cache')
+    const raw = localStorage.getItem('warehouse-cache')
     if (!raw) return []
     try {
       const parsed = JSON.parse(raw)
@@ -76,14 +76,14 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
 
   const fetchData = async () => {
     if (!normalizedStockName) {
-      setError('Missing stock name in URL.')
+      setError('Missing warehouse name in URL.')
       return
     }
 
-    const cachedStocks = getCachedStocks() as StockItem[]
+    const cachedWarehouse = getCachedWarehouse() as StockItem[]
     const matchedStock =
-      Array.isArray(cachedStocks) &&
-      cachedStocks.find(
+      Array.isArray(cachedWarehouse) &&
+      cachedWarehouse.find(
         (s) => s.StockName?.trim().toLowerCase() === normalizedStockName,
       )
 
@@ -91,7 +91,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       setStock(null)
       setProducts([])
       setCategories([])
-      setError('Stock not found locally. Reopen from Stocks page to refresh.')
+      setError('Warehouse not found locally. Reopen from Warehouse page to refresh.')
       return
     }
 
@@ -165,7 +165,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     setProductMessage(null)
     setProductError(null)
     if (!stock) {
-      setProductError('Cannot add product: stock not loaded.')
+      setProductError('Cannot add product: warehouse not loaded.')
       return
     }
 
@@ -246,7 +246,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     setCategoryMessage(null)
     setCategoryError(null)
     if (!stock) {
-      setCategoryError('Cannot add categories: stock not loaded.')
+      setCategoryError('Cannot add categories: warehouse not loaded.')
       return
     }
 
@@ -298,7 +298,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
     setCategoryMessage(null)
     setCategoryError(null)
     if (!stock) {
-      setCategoryError('Cannot delete category: stock not loaded.')
+      setCategoryError('Cannot delete category: warehouse not loaded.')
       return
     }
 
@@ -366,7 +366,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
   }
 
   const formattedTitle =
-    stock?.StockName || stockName || 'Stock products overview'
+    stock?.StockName || stockName || 'Warehouse products overview'
 
   return (
     <div className="main-card">
@@ -387,7 +387,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
       <div className="main-actions">
         {onBack && (
           <button type="button" className="outline" onClick={onBack}>
-            Back to stock list
+            Back to warehouse list
           </button>
         )}
       </div>
@@ -523,7 +523,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
         {error && <div className="banner error">{error}</div>}
 
         {!loading && !error && products.length === 0 && (
-          <p className="subhead">No products for this stock yet.</p>
+          <p className="subhead">No products for this warehouse yet.</p>
         )}
 
         {!loading && !error && products.length > 0 && (
@@ -625,7 +625,7 @@ function StockProductsPage({ stockName, onBack }: StockProductsPageProps) {
               <div>
                 <h2>Manage categories</h2>
                 <p className="helper">
-                  Review, delete, or add categories for this stock.
+                  Review, delete, or add categories for this warehouse.
                 </p>
               </div>
             </div>

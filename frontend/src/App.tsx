@@ -9,7 +9,7 @@ import type { User } from './types/user'
 
 const LOCAL_STORAGE_USER_KEY = 'authUser'
 
-type ViewKey = 'stocks' | 'user'
+type ViewKey = 'warehouse' | 'user'
 
 function App() {
   const pathname =
@@ -26,16 +26,16 @@ function App() {
     !isAdminRoute &&
     !isAccountRoute &&
     typeof window !== 'undefined' &&
-    normalizedPath.startsWith('/stocks/') &&
-    normalizedPath.length > '/stocks/'.length
+    normalizedPath.startsWith('/warehouse/') &&
+    normalizedPath.length > '/warehouse/'.length
   const stockSlug = isStockDetailRoute
-    ? decodeURIComponent(pathname.replace(/^\/stocks\//i, ''))
+    ? decodeURIComponent(pathname.replace(/^\/warehouse\//i, ''))
     : ''
 
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userEmail, setUserEmail] = useState<string | undefined>(undefined)
   const [user, setUser] = useState<User | undefined>(undefined)
-  const [activeView, setActiveView] = useState<ViewKey>('stocks')
+  const [activeView, setActiveView] = useState<ViewKey>('warehouse')
   const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
@@ -66,12 +66,12 @@ function App() {
       !isStockDetailRoute &&
       window.location.pathname === '/'
     ) {
-      window.location.replace('/stocks')
+      window.location.replace('/warehouse')
     }
     if (isAccountRoute) {
       setActiveView('user')
     } else {
-      setActiveView('stocks')
+      setActiveView('warehouse')
     }
     if (
       typeof window !== 'undefined' &&
@@ -79,14 +79,14 @@ function App() {
       !isAccountRoute &&
       !isStockDetailRoute &&
       normalizedPath !== '/' &&
-      normalizedPath !== '/stocks' &&
-      normalizedPath !== '/stocks/' &&
+      normalizedPath !== '/warehouse' &&
+      normalizedPath !== '/warehouse/' &&
       normalizedPath !== '/login' &&
       normalizedPath !== '/login/' &&
-      !normalizedPath.startsWith('/stocks/')
+      !normalizedPath.startsWith('/warehouse/')
     ) {
       const suffix = pathname.startsWith('/') ? pathname : `/${pathname}`
-      window.location.replace(`/stocks${suffix}`)
+      window.location.replace(`/warehouse${suffix}`)
     }
   }, [
     isAdminRoute,
@@ -103,7 +103,7 @@ function App() {
       typeof window !== 'undefined' &&
       normalizedPath === '/login'
     ) {
-      window.location.replace('/stocks')
+      window.location.replace('/warehouse')
     }
   }, [isAuthenticated, normalizedPath, hydrated])
 
@@ -126,7 +126,7 @@ function App() {
       )
     }
     if (typeof window !== 'undefined') {
-      window.location.replace('/stocks')
+      window.location.replace('/warehouse')
     }
   }
 
@@ -135,7 +135,7 @@ function App() {
     setUserEmail(undefined)
     setUser(undefined)
     localStorage.removeItem(LOCAL_STORAGE_USER_KEY)
-    setActiveView('stocks')
+    setActiveView('warehouse')
   }
 
   if (!isAuthenticated) {
@@ -158,7 +158,7 @@ function App() {
   }
 
   const viewLabel: Record<ViewKey, string> = {
-    stocks: 'Stocks',
+    warehouse: 'Warehouse',
     user: 'Account',
   }
 
@@ -173,7 +173,7 @@ function App() {
       <StockProductsPage
         stockName={stockSlug}
         user={user}
-        onBack={() => window.location.assign('/stocks')}
+        onBack={() => window.location.assign('/warehouse')}
       />
     )
   } else if (isAccountRoute || activeView === 'user') {
@@ -184,8 +184,8 @@ function App() {
   const handleNav = (view: ViewKey) => {
     if (view === 'user') {
       window.location.assign('/account')
-    } else if (view === 'stocks') {
-      window.location.assign('/stocks')
+    } else if (view === 'warehouse') {
+      window.location.assign('/warehouse')
     }
     setActiveView(view)
   }

@@ -144,7 +144,7 @@ function AuthFormCard({ onLoginSuccess }: AuthFormProps) {
         <h1>{title}</h1>
         <p className="subhead">
           {mode === 'login'
-            ? 'Log in to manage your stocks.'
+            ? 'Log in to manage your warehouse.'
             : ''}
         </p>
       </div>

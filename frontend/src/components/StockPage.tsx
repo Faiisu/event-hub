@@ -13,7 +13,7 @@ const emptyStockForm: StockForm = {
 
 function StockPage({ user }: StockPageProps) {
   const [stockForm, setStockForm] = useState<StockForm>(emptyStockForm)
-  const [stocks, setStocks] = useState<StockItem[]>([])
+  const [warehouse, setWarehouse] = useState<StockItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -27,12 +27,12 @@ function StockPage({ user }: StockPageProps) {
 
   const userId = user?.UserId ?? user?.UserID ?? ''
 
-  const fetchStocks = async () => {
+  const fetchWarehouse = async () => {
     if (!userId) {
-      setError('Missing user id to load stocks.')
-      setStocks([])
+      setError('Missing user id to load warehouse.')
+      setWarehouse([])
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('stocks-cache')
+        localStorage.removeItem('warehouse-cache')
       }
       return
     }
@@ -41,24 +41,24 @@ function StockPage({ user }: StockPageProps) {
     setError(null)
     try {
       const response = await fetch(
-        apiUrl(`/api/stocks?userId=${encodeURIComponent(userId)}`),
+        apiUrl(`/api/warehouse?userId=${encodeURIComponent(userId)}`),
       )
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || 'Failed to load stocks')
+        throw new Error(errorText || 'Failed to load warehouse')
       }
       const body = (await response.json()) as StockItem[]
-      setStocks(Array.isArray(body) ? body : [])
+      setWarehouse(Array.isArray(body) ? body : [])
       if (typeof window !== 'undefined') {
         try {
-          localStorage.setItem('stocks-cache', JSON.stringify(body ?? []))
+          localStorage.setItem('warehouse-cache', JSON.stringify(body ?? []))
         } catch {
           // ignore cache write failures
         }
       }
     } catch (err) {
       const fallback =
-        err instanceof Error ? err.message : 'Could not load stocks.'
+        err instanceof Error ? err.message : 'Could not load warehouse.'
       setError(fallback)
     } finally {
       setLoading(false)
@@ -66,7 +66,7 @@ function StockPage({ user }: StockPageProps) {
   }
 
   useEffect(() => {
-    fetchStocks()
+    fetchWarehouse()
   }, [userId])
 
   const handleCreateStock = async (event: FormEvent) => {
@@ -81,7 +81,7 @@ function StockPage({ user }: StockPageProps) {
 
     const stockName = stockForm.stockName.trim()
     if (!stockName) {
-      setSubmitError('Stock name is required.')
+      setSubmitError('Warehouse name is required.')
       return
     }
 
@@ -92,7 +92,7 @@ function StockPage({ user }: StockPageProps) {
         UserID: userId,
       }
 
-      const response = await fetch(apiUrl('/api/stocks'), {
+      const response = await fetch(apiUrl('/api/warehouse'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -100,29 +100,29 @@ function StockPage({ user }: StockPageProps) {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || 'Failed to create stock')
+        throw new Error(errorText || 'Failed to create warehouse')
       }
 
       const body = await response.json().catch(() => null)
       const successMessage =
         (body && (body.message || body.Message)) ||
-        'Stock created successfully.'
+        'Warehouse created successfully.'
       setSubmitMessage(successMessage)
       setStockForm(emptyStockForm)
-      await fetchStocks()
+      await fetchWarehouse()
     } catch (err) {
       const fallback =
-        err instanceof Error ? err.message : 'Could not create stock.'
+        err instanceof Error ? err.message : 'Could not create warehouse.'
       setSubmitError(fallback)
     } finally {
       setSubmitting(false)
     }
   }
 
-  const visibleStocks =
-    userId && stocks.length > 0
-      ? stocks.filter((stock) => stock.UserID === userId)
-      : stocks
+  const visibleWarehouse =
+    userId && warehouse.length > 0
+      ? warehouse.filter((stock) => stock.UserID === userId)
+      : warehouse
 
   const openDeleteModal = (stock: StockItem) => {
     setModalOpen(true)
@@ -144,7 +144,7 @@ function StockPage({ user }: StockPageProps) {
     if (!modalStock) return
     const trimmed = modalValue.trim()
     if (trimmed !== (modalStock.StockName || '').trim()) {
-      setModalError('Name did not match. Please type the exact stock name.')
+      setModalError('Name did not match. Please type the exact warehouse name.')
       return
     }
 
@@ -153,7 +153,7 @@ function StockPage({ user }: StockPageProps) {
     setModalError(null)
     try {
       const response = await fetch(
-        apiUrl(`/api/stocks/${encodeURIComponent(modalStock.StockID)}`),
+        apiUrl(`/api/warehouse/${encodeURIComponent(modalStock.StockID)}`),
         {
           method: 'DELETE',
         },
@@ -161,15 +161,15 @@ function StockPage({ user }: StockPageProps) {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || 'Failed to delete stock')
+        throw new Error(errorText || 'Failed to delete warehouse')
       }
 
-      setSubmitMessage('Stock deleted.')
+      setSubmitMessage('Warehouse deleted.')
       setModalOpen(false)
-      await fetchStocks()
+      await fetchWarehouse()
     } catch (err) {
       const fallback =
-        err instanceof Error ? err.message : 'Could not delete stock.'
+        err instanceof Error ? err.message : 'Could not delete warehouse.'
       setSubmitError(fallback)
     }
   }
@@ -178,7 +178,7 @@ function StockPage({ user }: StockPageProps) {
     if (!modalStock) return
     const trimmed = modalValue.trim()
     if (!trimmed) {
-      setModalError('Stock name is required.')
+      setModalError('Warehouse name is required.')
       return
     }
 
@@ -191,7 +191,7 @@ function StockPage({ user }: StockPageProps) {
         UserID: modalStock.UserID || userId,
       }
       const response = await fetch(
-        apiUrl(`/api/stocks/${encodeURIComponent(modalStock.StockID)}`),
+        apiUrl(`/api/warehouse/${encodeURIComponent(modalStock.StockID)}`),
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -201,15 +201,15 @@ function StockPage({ user }: StockPageProps) {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(errorText || 'Failed to update stock')
+        throw new Error(errorText || 'Failed to update warehouse')
       }
 
-      setSubmitMessage('Stock updated.')
+      setSubmitMessage('Warehouse updated.')
       setModalOpen(false)
-      await fetchStocks()
+      await fetchWarehouse()
     } catch (err) {
       const fallback =
-        err instanceof Error ? err.message : 'Could not update stock.'
+        err instanceof Error ? err.message : 'Could not update warehouse.'
       setSubmitError(fallback)
     }
   }
@@ -224,22 +224,22 @@ function StockPage({ user }: StockPageProps) {
 
   return (
     <div className="main-card">
-      <h1>Manage stock</h1>
+      <h1>Manage warehouse</h1>
 
       <div className="stat-grid">
         <div className="stat-card blue">
-          <p className="stat-label">My stock list</p>
-          <p className="stat-value">{visibleStocks.length}</p>
+          <p className="stat-label">My warehouse list</p>
+          <p className="stat-value">{visibleWarehouse.length}</p>
         </div>
         
         <div className="event-card">
           <div className="event-header">
-            <h2>Create stock</h2>
+            <h2>Create warehouse</h2>
           </div>
 
           <form className="event-form" onSubmit={handleCreateStock}>
             <label className="field">
-              <span>Stock name</span>
+              <span>Warehouse name</span>
               <input
                 name="stockName"
                 type="text"
@@ -257,7 +257,7 @@ function StockPage({ user }: StockPageProps) {
             {submitError && <div className="banner error">{submitError}</div>}
 
             <button type="submit" className="submit" disabled={submitting}>
-              {submitting ? 'Creating...' : 'Create stock'}
+              {submitting ? 'Creating...' : 'Create warehouse'}
             </button>
           </form>
         </div>
@@ -266,19 +266,19 @@ function StockPage({ user }: StockPageProps) {
 
       <div className="event-card" style={{ marginTop: 16 }}>
         <div className="event-header">
-          <h2>Your stock</h2>
+          <h2>Your warehouse</h2>
         </div>
 
-        {loading && <div>Loading stock...</div>}
+        {loading && <div>Loading warehouse...</div>}
         {error && <div className="banner error">{error}</div>}
 
-        {!loading && !error && visibleStocks.length === 0 && (
-          <p className="subhead">No stock yet.</p>
+        {!loading && !error && visibleWarehouse.length === 0 && (
+          <p className="subhead">No warehouse yet.</p>
         )}
 
-        {!loading && !error && visibleStocks.length > 0 && (
+        {!loading && !error && visibleWarehouse.length > 0 && (
           <div className="event-list">
-            {visibleStocks.map((stock) => (
+            {visibleWarehouse.map((stock) => (
               <div
                 key={stock.StockID}
                 className="event-item stock-button"
@@ -287,7 +287,7 @@ function StockPage({ user }: StockPageProps) {
               >
                 <div className="stock-info">
                   <p className="event-title">{stock.StockName}</p>
-                  <p className="helper">Stock ID: {stock.StockID}</p>
+                  <p className="helper">Warehouse ID: {stock.StockID}</p>
                 </div>
                 <div className="stock-actions">
                   <button
@@ -295,7 +295,7 @@ function StockPage({ user }: StockPageProps) {
                     className="chip subtle"
                     onClick={() =>
                       window.location.assign(
-                        `/stocks/${encodeURIComponent(stock.StockName)}`,
+                        `/warehouse/${encodeURIComponent(stock.StockName)}`,
                       )
                     }
                   >
@@ -328,21 +328,21 @@ function StockPage({ user }: StockPageProps) {
             <div className="event-header" style={{ marginBottom: 12 }}>
               <h2>
                 {modalMode === 'delete'
-                  ? 'Delete stock'
-                  : 'Edit stock name'}
+                  ? 'Delete warehouse'
+                  : 'Edit warehouse name'}
               </h2>
               <p className="helper">
                 {modalMode === 'delete'
-                  ? 'Type the exact stock name to confirm deletion.'
-                  : 'Update the stock name and save.'}
+                  ? 'Type the exact warehouse name to confirm deletion.'
+                  : 'Update the warehouse name and save.'}
               </p>
             </div>
 
             <label className="field">
               <span>
                 {modalMode === 'delete'
-                  ? `Stock name: ${modalStock?.StockName || ''}`
-                  : 'New stock name'}
+                  ? `Warehouse name: ${modalStock?.StockName || ''}`
+                  : 'New warehouse name'}
               </span>
               <input
                 type="text"
@@ -350,8 +350,8 @@ function StockPage({ user }: StockPageProps) {
                 onChange={(e) => setModalValue(e.target.value)}
                 placeholder={
                   modalMode === 'delete'
-                    ? 'Type the stock name to delete'
-                    : 'Enter a new stock name'
+                    ? 'Type the warehouse name to delete'
+                    : 'Enter a new warehouse name'
                 }
               />
             </label>
