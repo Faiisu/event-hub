@@ -47,6 +47,17 @@ definitions:
       Password:
         type: string
     type: object
+  handlers.updateProductRequest:
+    properties:
+      Category:
+        type: string
+      ProductName:
+        type: string
+      ProductQty:
+        type: integer
+      Unit:
+        type: string
+    type: object
   models.Categories:
     properties:
       CategoryID:
@@ -73,15 +84,6 @@ definitions:
       Unit:
         type: string
     type: object
-  models.Warehouse:
-    properties:
-      StockID:
-        type: string
-      StockName:
-        type: string
-      UserID:
-        type: string
-    type: object
   models.Users:
     properties:
       AvatarURL:
@@ -95,11 +97,20 @@ definitions:
       UserId:
         type: string
     type: object
+  models.Warehouse:
+    properties:
+      StockID:
+        type: string
+      StockName:
+        type: string
+      UserID:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
-  description: Public HTTP endpoints for the Personal Warehouse Management backend.
-  title: Personal Warehouse Management API
+  description: Public HTTP endpoints for the Event Blog backend.
+  title: Event Blog API
   version: "1.0"
 paths:
   /api:
@@ -307,7 +318,7 @@ paths:
       summary: List products
       tags:
       - products
-    put:
+    post:
       consumes:
       - application/json
       description: Creates a new product record.
@@ -370,6 +381,50 @@ paths:
               type: string
             type: object
       summary: Delete a product
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Updates mutable fields on an existing product.
+      parameters:
+      - description: Product ID (UUID)
+        in: path
+        name: productId
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.updateProductRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Products'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a product
       tags:
       - products
   /api/register:

@@ -323,7 +323,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "post": {
                 "description": "Creates a new product record.",
                 "consumes": [
                     "application/json"
@@ -375,6 +375,72 @@ const docTemplate = `{
             }
         },
         "/api/products/{productId}": {
+            "put": {
+                "description": "Updates mutable fields on an existing product.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "products"
+                ],
+                "summary": "Update a product",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Product ID (UUID)",
+                        "name": "productId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.updateProductRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Products"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "delete": {
                 "description": "Deletes a product by ID.",
                 "produces": [
@@ -697,6 +763,23 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.updateProductRequest": {
+            "type": "object",
+            "properties": {
+                "Category": {
+                    "type": "string"
+                },
+                "ProductName": {
+                    "type": "string"
+                },
+                "ProductQty": {
+                    "type": "integer"
+                },
+                "Unit": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Categories": {
             "type": "object",
             "properties": {
@@ -737,20 +820,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.Warehouse": {
-            "type": "object",
-            "properties": {
-                "StockID": {
-                    "type": "string"
-                },
-                "StockName": {
-                    "type": "string"
-                },
-                "UserID": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Users": {
             "type": "object",
             "properties": {
@@ -770,6 +839,20 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "models.Warehouse": {
+            "type": "object",
+            "properties": {
+                "StockID": {
+                    "type": "string"
+                },
+                "StockName": {
+                    "type": "string"
+                },
+                "UserID": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
@@ -780,8 +863,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-		Title:            "Personal Warehouse Management API",
-		Description:      "Public HTTP endpoints for the Personal Warehouse Management backend.",
+	Title:            "Event Blog API",
+	Description:      "Public HTTP endpoints for the Event Blog backend.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
