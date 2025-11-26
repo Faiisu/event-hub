@@ -44,12 +44,12 @@ go mod download
 go run .
 ```
 
-Before running, create or edit `backend/.env` (loaded by `github.com/joho/godotenv`) or export the variables yourself:
+Before running, create `backend/.env` or export the variables yourself:
 
-| Variable | Required | Description | Default |
-|----------|----------|-------------|---------|
-| `MONGO_URL` | ✅ | MongoDB connection string with credentials. | – |
-| `MONGO_DB_NAME` | ❌ | Database name for all collections. | `event_hub` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `MONGO_URL` | MongoDB connection string with credentials. | – |
+| `MONGO_DB_NAME` | Database name for all collections. | `perosnal_stock_manage` |
 
 The API serves on `http://localhost:8080` by default. Swagger docs are available at `http://localhost:8080/swagger/index.html`.
 
@@ -67,7 +67,7 @@ Vite expects a backend origin configured in `frontend/.env` (anything starting w
 VITE_BACKEND_IP=http://localhost:8080
 ```
 
-Build for production with `npm run build`, preview with `npm run preview`
+Build for production with `npm run build`, Build for developing with `npm run dev`
 
 ## Docker & Deployment
 
