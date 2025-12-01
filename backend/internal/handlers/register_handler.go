@@ -61,7 +61,7 @@ func RegisterUser(c *fiber.Ctx) error {
 	}
 
 	user := models.Users{
-		UserID:       uuid.New(),
+		UserID:       uuid.New().String(),
 		Email:        req.Email,
 		DisplayName:  req.DisplayName,
 		PasswordHash: string(hashedPassword),
