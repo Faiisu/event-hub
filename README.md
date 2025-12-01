@@ -62,6 +62,35 @@ A full-stack warehouse management system designed to help users track products, 
     npm run dev
     ```
 
+## Deployment
+
+The project includes a Docker Compose configuration for easy deployment.
+
+### Prerequisites
+-   Docker
+-   Docker Compose
+
+### Running with Docker Compose
+
+1.  Navigate to the project root.
+2.  Run the following command to build and start the services:
+    ```bash
+    docker-compose -f deploy/docker-compose.yml up --build
+    ```
+3.  The application will be available at `http://localhost:3000`.
+4.  The backend API will be available at `http://localhost:8080` (and proxied via `http://localhost:3000/api`).
+
+### Environment Variables
+
+The `deploy/docker-compose.yml` file uses the following environment variables (with defaults):
+
+-   `MONGO_URL`: MongoDB connection string (default: `mongodb://mongo:27017`)
+-   `MONGO_DB_NAME`: Database name (default: `personal_stock_manage`)
+-   `BACKEND_PORT`: Backend server port (default: `8080`)
+-   `FRONTEND_PORT`: Frontend server port (default: `3000`)
+
+You can create a `.env` file in the project root to override these values.
+
 ## API Endpoints
 
 ### Auth
